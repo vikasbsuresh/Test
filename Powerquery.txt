@@ -1,7 +1,6 @@
 let
     usage = Text.Lower([UsageType]),
 
-    // Normalize separators
     cleaned = Text.Replace(
         Text.Replace(
             Text.Replace(
@@ -13,10 +12,8 @@ let
         ".", "-"
     ),
 
-    // Split into pieces
     parts = List.Select(Text.Split(cleaned, "-"), each _ <> ""),
 
-    // Full AWS region detection
     fullRegionCandidates =
         if List.Count(parts) >= 3 then
             List.Transform(
@@ -30,40 +27,79 @@ let
         "us-east-1","us-east-2",
         "us-west-1","us-west-2",
         "ca-central-1",
+        "ca-west-1",
+
         "eu-west-1","eu-west-2","eu-west-3",
-        "eu-central-1","eu-north-1",
+        "eu-central-1","eu-central-2",
+        "eu-north-1","eu-south-1","eu-south-2",
+
         "ap-south-1","ap-south-2",
         "ap-southeast-1","ap-southeast-2","ap-southeast-3",
+        "ap-southeast-4","ap-southeast-5","ap-southeast-7",
         "ap-northeast-1","ap-northeast-2","ap-northeast-3",
+        "ap-east-1","ap-east-2",
+
         "sa-east-1",
-        "me-south-1",
-        "af-south-1"
+
+        "me-south-1","me-central-1",
+
+        "af-south-1",
+
+        "il-central-1",
+
+        "mx-central-1",
+
+        "us-gov-east-1","us-gov-west-1",
+
+        "cn-north-1","cn-northwest-1"
     },
 
     fullRegionMatch =
         List.First(
-            List.Select(fullRegionCandidates, each List.Contains(knownFullRegions, _)),
+            List.Select(
+                fullRegionCandidates,
+                each List.Contains(knownFullRegions, _)
+            ),
             null
         ),
 
-    // If no full region found, search for short code anywhere
+    shortCodes = {
+        "use1","use2",
+        "usw1","usw2",
+
+        "cac1","caw1",
+
+        "euw1","euw2","euw3",
+        "euc1","euc2",
+        "eun1",
+        "eus1","eus2",
+
+        "aps1","aps2",
+        "apse1","apse2","apse3","apse4","apse5","apse7",
+        "apne1","apne2","apne3",
+        "ape1","ape2",
+
+        "sae1",
+
+        "mes1","mec1",
+
+        "afs1",
+
+        "ilc1",
+
+        "mxc1",
+
+        "usge1","usgw1",
+
+        "cnn1","cnnw1"
+    },
+
     shortCodeMatch =
         if fullRegionMatch = null then
             List.First(
                 List.Select(
                     parts,
-                    each List.Contains(
-                        {
-                            "use1","use2","usw1","usw2",
-                            "cac1",
-                            "euw1","euw2","euw3","euc1","eun1",
-                            "aps1","aps2",
-                            "apse1","apse2","apse3",
-                            "apne1","apne2","apne3",
-                            "sae1","mes1","afs1"
-                        },
-                        _
-                    )
+                    each List.Contains(shortCodes, _)
                 ),
                 null
             )
