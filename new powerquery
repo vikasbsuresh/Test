@@ -1,0 +1,66 @@
+let
+    usageType = Text.Lower([UsageType]),
+    itemDesc = Text.Lower([ItemDescription]),
+    azRaw = Text.Lower([AvailabilityZone]),
+
+    // Normalize AZ (us-east-1a → us-east-1)
+    az = if azRaw <> null and Text.Length(azRaw) > 1 
+         then Text.Start(azRaw, Text.Length(azRaw) - 1) 
+         else azRaw,
+
+    getRegion = (text as nullable text) as nullable text =>
+        if text = null then null
+
+        // US
+        else if Text.Contains(text, "use1") or Text.Contains(text, "us-east-1") then "us-east-1"
+        else if Text.Contains(text, "use2") or Text.Contains(text, "us-east-2") then "us-east-2"
+        else if Text.Contains(text, "usw1") or Text.Contains(text, "us-west-1") then "us-west-1"
+        else if Text.Contains(text, "usw2") or Text.Contains(text, "us-west-2") then "us-west-2"
+
+        // Europe
+        else if Text.Contains(text, "euw1") or Text.Contains(text, "eu-west-1") then "eu-west-1"
+        else if Text.Contains(text, "euw2") or Text.Contains(text, "eu-west-2") then "eu-west-2"
+        else if Text.Contains(text, "euw3") or Text.Contains(text, "eu-west-3") then "eu-west-3"
+        else if Text.Contains(text, "euc1") or Text.Contains(text, "eu-central-1") then "eu-central-1"
+        else if Text.Contains(text, "euc2") or Text.Contains(text, "eu-central-2") then "eu-central-2"
+        else if Text.Contains(text, "eus1") or Text.Contains(text, "eu-south-1") then "eu-south-1"
+        else if Text.Contains(text, "eus2") or Text.Contains(text, "eu-south-2") then "eu-south-2"
+        else if Text.Contains(text, "eun1") or Text.Contains(text, "eu-north-1") then "eu-north-1"
+
+        // Asia Pacific
+        else if Text.Contains(text, "aps1") or Text.Contains(text, "ap-south-1") then "ap-south-1"
+        else if Text.Contains(text, "aps2") or Text.Contains(text, "ap-south-2") then "ap-south-2"
+        else if Text.Contains(text, "apse1") or Text.Contains(text, "ap-southeast-1") then "ap-southeast-1"
+        else if Text.Contains(text, "apse2") or Text.Contains(text, "ap-southeast-2") then "ap-southeast-2"
+        else if Text.Contains(text, "apse3") or Text.Contains(text, "ap-southeast-3") then "ap-southeast-3"
+        else if Text.Contains(text, "apse4") or Text.Contains(text, "ap-southeast-4") then "ap-southeast-4"
+        else if Text.Contains(text, "apne1") or Text.Contains(text, "ap-northeast-1") then "ap-northeast-1"
+        else if Text.Contains(text, "apne2") or Text.Contains(text, "ap-northeast-2") then "ap-northeast-2"
+        else if Text.Contains(text, "apne3") or Text.Contains(text, "ap-northeast-3") then "ap-northeast-3"
+
+        // Canada
+        else if Text.Contains(text, "cac1") or Text.Contains(text, "ca-central-1") then "ca-central-1"
+
+        // South America
+        else if Text.Contains(text, "sae1") or Text.Contains(text, "sa-east-1") then "sa-east-1"
+
+        // Middle East
+        else if Text.Contains(text, "mes1") or Text.Contains(text, "me-south-1") then "me-south-1"
+        else if Text.Contains(text, "mec1") or Text.Contains(text, "me-central-1") then "me-central-1"
+
+        // Africa
+        else if Text.Contains(text, "afs1") or Text.Contains(text, "af-south-1") then "af-south-1"
+
+        // China (if present in billing)
+        else if Text.Contains(text, "cnn1") or Text.Contains(text, "cn-north-1") then "cn-north-1"
+        else if Text.Contains(text, "cnnw1") or Text.Contains(text, "cn-northwest-1") then "cn-northwest-1"
+
+        else null,
+
+    result =
+        if getRegion(usageType) <> null then getRegion(usageType)
+        else if getRegion(itemDesc) <> null then getRegion(itemDesc)
+        else if getRegion(az) <> null then getRegion(az)
+        else az   // final fallback (already cleaned AZ)
+in
+    result
